@@ -1,0 +1,10 @@
+nottom;0
+Tester;0
+Help;0
+helper;0
+Ups;4
+pop;0
+LUP;47
+Pio;45
+Yte;100
+Ups;100

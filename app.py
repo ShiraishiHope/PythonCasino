@@ -2,12 +2,15 @@ from User import User
 from Score import Score
 from games.Slots import Slots
 from games.Roulette import Roulette
+import getpass
 
 score = Score()
 
 name = input("name: ")
+password = getpass.getpass("password: ")
 
 user1 = User(name)
+user1.set_password(password)
 
 score.check_user(user1)
 score.reorganize_scores()

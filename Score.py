@@ -1,6 +1,7 @@
 #! usr/bin/env python3
 
 import sys
+import hashlib
 
 class Score:
     def __init__(self):
@@ -9,21 +10,42 @@ class Score:
     def check_user(self, user):
         found_user = False
         with open(self.filename, 'r+') as score:
-            for line in score:
+            lines = score.readlines()
+            score.seek(0)
+        
+            for i, line in enumerate(lines):
                 parts = line.strip().split(';')
                 if user.name == parts[0]:
-                    if int(parts[1]) == 0:
-                        self.buy_in(user)
-                        found_user = True
+                    if user.password is not None:
+                        if self.verify_password(user.password, parts[2]):
+                            if int(parts[1]) == 0:
+                                self.buy_in(user)
+                                found_user = True
+                            else:
+                                funds = int(parts[1])
+                                user.user_funds(funds)
+                                found_user = True
+                                lines[i] = f"{parts[0]};{parts[1]};{user.password}\n"  # Update the password in the score file
+                                break
+                        else:
+                            print("Incorrect password. Exiting...")
+                            sys.exit()
                     else:
-                        funds = int(parts[1])
-                        user.user_funds(funds)
-                        found_user = True
-                        break
+                        print("Password is required for an existing user. Exiting...")
+                        sys.exit()
 
             if not found_user:
                 user.funds = 100
-                score.write(f"{user.name};100\n")
+                user.set_password(user.password)  # Set the password for the new user
+                score.write(f"{user.name};100;{user.password}\n")
+
+            score.writelines(lines)
+            score.truncate()
+
+
+
+    def verify_password(self, password, stored_password):
+        return hashlib.sha512(password.encode()).hexdigest() == stored_password
             
     def reorganize_scores(self):
         # Read the lines from the text document
@@ -79,15 +101,15 @@ class Score:
         with open(self.filename, 'r+') as score:
             lines = score.readlines()
             score.seek(0)
-        
+
             for i, line in enumerate(lines):
                 parts = line.strip().split(';')
                 if user.name == parts[0]:
                     current_score = int(parts[1])
                     new_score = current_score + profit
-                    lines[i] = f"{user.name};{new_score}\n"
+                    lines[i] = f"{user.name};{new_score};{user.password}\n"
                     break
-        
+
             score.seek(0)
             score.writelines(lines)
             score.truncate()

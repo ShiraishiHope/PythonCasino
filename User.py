@@ -10,4 +10,6 @@ class User:
             self.funds += funds
         else:
             raise ValueError("You need money to play at a casino")
+    def update_funds(self, funds):
+            self.funds += funds
         
